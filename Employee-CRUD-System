@@ -1,0 +1,145 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace EmployeeCRUDApp
+{
+    // 1. Interface (Abstraction)
+    public interface IEmployeeRepository
+    {
+        void Add(Employee emp);
+        List<Employee> GetAll();
+        Employee GetById(int id);
+        void Update(Employee emp);
+        void Delete(int id);
+    }
+
+    // 2. Base Class (Inheritance)
+    public abstract class Human
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    // 3. Derived Class (Encapsulation)
+    public class Employee : Human
+    {
+        public string Position { get; set; }
+        public double Salary { get; set; }
+
+        public override string ToString()
+        {
+            return $"[ID: {Id}] Name: {Name}, Position: {Position}, Salary: {Salary:F2}";
+        }
+    }
+
+    // 4. Logic Class (Implementation)
+    public class EmployeeManager : IEmployeeRepository
+    {
+        private List<Employee> employees = new List<Employee>();
+
+        public void Add(Employee emp) => employees.Add(emp);
+
+        public List<Employee> GetAll() => employees;
+
+        public Employee GetById(int id) => employees.FirstOrDefault(e => e.Id == id);
+
+        public void Update(Employee emp)
+        {
+            var existing = GetById(emp.Id);
+            if (existing != null)
+            {
+                existing.Name = emp.Name;
+                existing.Position = emp.Position;
+                existing.Salary = emp.Salary;
+            }
+        }
+
+        public void Delete(int id)
+        {
+            var emp = GetById(id);
+            if (emp != null) employees.Remove(emp);
+        }
+    }
+
+    // 5. Main Program
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            EmployeeManager manager = new EmployeeManager();
+            bool running = true;
+
+            while (running)
+            {
+                Console.WriteLine("\n--- Employee Management System (CRUD) ---");
+                Console.WriteLine("1. Add New Employee");
+                Console.WriteLine("2. Show All Employees");
+                Console.WriteLine("3. Update Employee Data");
+                Console.WriteLine("4. Delete Employee");
+                Console.WriteLine("5. Exit");
+                Console.Write("Select Choice: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Employee newEmp = new Employee();
+                        Console.Write("Enter ID: ");
+                        newEmp.Id = int.Parse(Console.ReadLine());
+                        Console.Write("Enter Name: ");
+                        newEmp.Name = Console.ReadLine();
+                        Console.Write("Enter Position: ");
+                        newEmp.Position = Console.ReadLine();
+                        Console.Write("Enter Salary: ");
+                        newEmp.Salary = double.Parse(Console.ReadLine());
+                        
+                        manager.Add(newEmp);
+                        Console.WriteLine("Added Successfully!");
+                        break;
+
+                    case "2":
+                        Console.WriteLine("\n--- Employee List ---");
+                        var list = manager.GetAll();
+                        if (list.Count == 0) Console.WriteLine("The list is empty.");
+                        else list.ForEach(e => Console.WriteLine(e));
+                        break;
+
+                    case "3":
+                        Console.Write("Enter ID to Update: ");
+                        int upId = int.Parse(Console.ReadLine());
+                        var empToUp = manager.GetById(upId);
+                        if (empToUp != null)
+                        {
+                            Console.Write("New Name: ");
+                            empToUp.Name = Console.ReadLine();
+                            Console.Write("New Position: ");
+                            empToUp.Position = Console.ReadLine();
+                            Console.Write("New Salary: ");
+                            empToUp.Salary = double.Parse(Console.ReadLine());
+                            manager.Update(empToUp);
+                            Console.WriteLine("Updated Successfully!");
+                        }
+                        else Console.WriteLine("ID not found!");
+                        break;
+
+                    case "4":
+                        Console.Write("Enter ID to Delete: ");
+                        int delId = int.Parse(Console.ReadLine());
+                        manager.Delete(delId);
+                        Console.WriteLine("Deleted.");
+                        break;
+
+                    case "5":
+                        running = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid Input!");
+                        break;
+                }
+            }
+        }
+    }
+}
